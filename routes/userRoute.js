@@ -2,6 +2,10 @@ import express, { request, response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/userModel.js';
+import dotenv from 'dotenv';
+
+// Initialize dotenv to load environment variables
+dotenv.config();
 
 const router = express.Router();
 
@@ -12,7 +16,7 @@ router.post('/signup', async(request, response) => {
 
         // Check if all required fields are provided
         if (!username || !email || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
+            return response.status(400).json({ message: 'All fields are required' });
         }
 
         // Normalize email to lowercase
@@ -43,26 +47,26 @@ router.post('/signup', async(request, response) => {
             email: newUser.email,
         };
 
-        return response.status(201).json(newUser);
+        return response.status(201).json(userResponse);
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        console.log('Signup error:', error.message);
+        response.status(500).json({ message: 'Internal server error' });
     }
 });
 
 // Route for User Login
 router.post('/login', async (request, response) => {
     try {
-        const { username, password } = request.body;
+        const { identifier, password } = request.body;
 
         // Check if all required fields are provided
-        if (!username || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
+        if (!identifier || !password) {
+            return response.status(400).json({ message: 'All fields are required' });
         }
 
         // Find the user by username
         const user = await User.findOne({
-            $or: [{ username }, { email: username.toLowerCase() }],
+            $or: [{ username: identifier }, { email: identifier.toLowerCase() }],
          });
         if (!user) {
             return response.status(404).json({ message: 'User not found'});
@@ -71,7 +75,7 @@ router.post('/login', async (request, response) => {
         // Check if the password is correct
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return response.status(401).json({ message: 'Inavlid passowrd' });
+            return response.status(401).json({ message: 'Invalid password' });
         }
 
         // Genereate JWT token with userId included
@@ -87,8 +91,8 @@ router.post('/login', async (request, response) => {
             email: user.email,
          });
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        console.log('Login error:', error.message);
+        response.status(500).json({ message: 'Internal server error' });
     }
 });
 
