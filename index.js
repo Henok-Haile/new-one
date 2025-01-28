@@ -5,12 +5,15 @@ import { Book } from './models/bookModel.js';
 import booksRoute from './routes/booksRoute.js';
 import userRoute from './routes/userRoute.js';
 import cors from 'cors';
+import path from 'path';
 
 const app = express();
 
 app.use(express.urlencoded({ extended: true }))
 
-app.use("/uploads", express.static("uploads"))
+// app.use("/uploads", express.static("uploads"))
+// Serve static files in the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware for parsing request body
 app.use(express.json());
