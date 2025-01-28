@@ -7,13 +7,13 @@ import { dirname } from 'path';
 dotenv.config();
 
 // Get the absolute path of the current directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const filename = fileURLToPath(import.meta.url);
+const dirname = dirname(filename);
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         // cb(null, 'uploads/');
-        cb(null, path.join(__dirname, '../uploads')); // Use an absolute path for 'uploads/'
+        cb(null, path.join(dirname, '../uploads')); // Use an absolute path for 'uploads/'
     },
     filename: (req, file, cb) => {
         cb(null, `${Date.now()}-${file.originalname}`);
