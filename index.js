@@ -18,11 +18,37 @@ app.use(express.json());
 // Middleware for handling CORS POLICY
 // Allow All Origins with Default of cors(*)
 // app.use(cors());
+// app.use(
+//     cors({
+//         origin: 'https://fullstack-web-developmnet-na-amal-duh6.vercel.app',
+//         methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//         allowedHeaders: ['Content-Type'],
+//     })
+// );
+
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5555',
+    'http://localhost:3000', // Local development
+    'http://127.0.0.1:3000', // Alternate localhost
+    'https://fullstack-web-developmnet-na-amal-duh6.vercel.app', // Deployed frontend
+];
+
 app.use(
     cors({
-        origin: 'https://fullstack-web-developmnet-na-amal-duh6.vercel.app',
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        allowedHeaders: ['Content-Type'],
+        origin: function (origin, callback) {
+            // Allow requests with no `Origin` (e.g., mobile apps or server-to-server requests)
+            if (!origin) return callback(null, true);
+
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true); // Allow the origin
+            } else {
+                callback(new Error('Not allowed by CORS')); // Reject the origin
+            }
+        },
+        methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+        allowedHeaders: ['Content-Type'], // Allowed headers
+        credentials: true, // If you need cookies or Authorization headers
     })
 );
 
