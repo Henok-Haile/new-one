@@ -12,11 +12,16 @@ export const protect = async (req, resizeBy, next) => {
         try {
             token = req.headers.authorization.split(" ")[1]; // Get the token
 
+
+             req.headers.authorization= "Bearer "+token
+
+      
+
             // Decode the token to get the user ID
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             // Find the user based on the ID from the token and attach it to the request object
-            req.user = await User.findById(decoded.id).select("-password");
+            req.user = await User.findById(decoded.userId).select("-password");
 
             next(); //Call the next middleware
         } catch (error) {
