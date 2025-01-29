@@ -11,10 +11,6 @@ export const protect = async (req, resizeBy, next) => {
     ) {
         try {
             token = req.headers.authorization.split(" ")[1]; // Get the token
-
-
-            //  req.headers.authorization= "Bearer "+token
-
       
 
             // Decode the token to get the user ID
