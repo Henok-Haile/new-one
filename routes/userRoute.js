@@ -53,7 +53,7 @@ router.post('/signup', async (request, response) => {
         if (newUser) {
             const verificationToken = jwt.sign(
                 { id: newUser._id },
-                process.env.SECRET_KEY,
+                process.env.JWT_SECRET,
                 { expiresIn: "1h" }
             );
 
@@ -77,40 +77,40 @@ router.post('/signup', async (request, response) => {
 // Route for confirmation email
 router.get('/verify-email', async (request, response) => {
     try {
-      const { token } = request.query;
-  
-      if (!token) {
-        return response.status(400).json({
-          message: "Invalid or missing token.",
+        const { token } = request.query;
+
+        if (!token) {
+            return response.status(400).json({
+                message: "Invalid or missing token.",
+            });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            return response.status(400).json({
+                message: "User not found.",
+            });
+        }
+
+        if (user.isVerified) {
+            return response.status(400).json({
+                message: "Email is already verified.",
+            });
+        }
+
+        user.isVerified = true;
+        await user.save();
+
+        response.status(200).json({
+            message: "Email successfully verified. You can now log in.",
         });
-      }
-  
-      const decoded = jwt.verify(token, process.env.EMAIL_PASS);
-  
-      const user = await User.findById(decoded.id);
-      if (!user) {
-        return response.status(400).json({
-          message: "User not found.",
-        });
-      }
-  
-      if (user.isVerified) {
-        return response.status(400).json({
-          message: "Email is already verified.",
-        });
-      }
-  
-      user.isVerified = true;
-      await user.save();
-  
-      response.status(200).json({
-        message: "Email successfully verified. You can now log in.",
-      });
     } catch (error) {
-      console.error(error);
-      response.status(500).json({ message: "Internal server error" });
+        console.error(error);
+        response.status(500).json({ message: "Internal server error" });
     }
-  });
+});
 //   const generateToken = (id) => {
 //     return jwt.sign({ id }, process.env.SECRET_KEY, {
 //       expiresIn: "500s",
