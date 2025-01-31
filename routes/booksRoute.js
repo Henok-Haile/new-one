@@ -1,37 +1,34 @@
 import express from 'express';
 import { Book } from '../models/bookModel.js';
-import upload from '../middleware/multer.js';
+
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Route for Save a new Book
-router.post('/', protect, upload.single('image'), async(request, response)=>{
+router.post('/', protect, async (request, response) => {
 
 
     try {
 
 
-        if(
+        if (
             !request.body.title ||
             !request.body.author ||
             !request.body.publishYear
-        ){
+        ) {
             return response.status(400).send({
                 Message: 'Send all required fields: title, author, puplishYear',
             });
         }
 
-        let imageUrl = '';
-        if (request.file) {
-            imageUrl = `${request.protocol}://${request.get('host')}/uploads/${request.file.filename}`;
-        }
-        
+
+
         const newBook = {
             title: request.body.title,
             author: request.body.author,
             publishYear: request.body.publishYear,
-            image: imageUrl,
+            image: request.body.image,
             userId: request.user._id, // Attach the logged-in user's ID to the book
         };
 
@@ -40,12 +37,12 @@ router.post('/', protect, upload.single('image'), async(request, response)=>{
 
     } catch (error) {
         console.log(error.message);
-        response.status(500).send({ message: error.message });        
+        response.status(500).send({ message: error.message });
     }
 })
 
 // Route for Get All Books from database
-router.get('/', protect, async (request, response)=>{
+router.get('/', protect, async (request, response) => {
     try {
         const books = await Book.find({ userId: request.user._id }); // Fetch books only for the logged-in user
         return response.status(200).json({
@@ -59,11 +56,11 @@ router.get('/', protect, async (request, response)=>{
 })
 
 // Route Books from database by id // Route for Get a Book by ID (user-specific)
-router.get('/:id', protect, async (request, response)=>{
+router.get('/:id', protect, async (request, response) => {
     try {
         const { id } = request.params;
 
-         // Check if the book exists and belongs to the logged-in user
+        // Check if the book exists and belongs to the logged-in user
         const book = await Book.findById(id);
         if (!book) {
             return response.status(404).json({ message: 'Book not found' });
@@ -71,7 +68,7 @@ router.get('/:id', protect, async (request, response)=>{
         if (book.userId.toString() !== request.user._id.toString()) {
             return response.status(403).json({ message: 'Unauthorized action' });
         }
-        
+
         return response.status(200).json(book);
     } catch (error) {
         console.log(error.message);
@@ -80,7 +77,7 @@ router.get('/:id', protect, async (request, response)=>{
 })
 
 // Route for Update a Book
-router.put('/:id', protect, async(request, response)=>{
+router.put('/:id', protect, async (request, response) => {
     try {
         if (
             !request.body.title ||
@@ -104,8 +101,8 @@ router.put('/:id', protect, async(request, response)=>{
         }
 
         // Update the book
-        const result = await Book.findByIdAndUpdate(id, request.body, {new: true});
-        if (!result){
+        const result = await Book.findByIdAndUpdate(id, request.body, { new: true });
+        if (!result) {
             return response.status(404).json({ message: 'Book not found' });
         }
 
@@ -118,7 +115,7 @@ router.put('/:id', protect, async(request, response)=>{
 })
 
 // Route for Delete a book
-router.delete('/:id', protect, async (request, response)=>{
+router.delete('/:id', protect, async (request, response) => {
     try {
         const { id } = request.params;
 
@@ -130,11 +127,11 @@ router.delete('/:id', protect, async (request, response)=>{
         if (book.userId.toString() !== request.user._id.toString()) {
             return response.status(403).json({ message: 'Unauthorized action' });
         }
-        
+
 
         // Delete the book        
         const result = await Book.findByIdAndDelete(id);
-        if (!result){
+        if (!result) {
             return response.status(404).json({ message: 'Book not found' });
         }
 

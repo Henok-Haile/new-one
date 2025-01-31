@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/userModel.js';
 import dotenv from 'dotenv';
+import sendVerificationEmail from '../services/emailservice.js';
 
 // Initialize dotenv to load environment variables
 dotenv.config();
@@ -10,7 +11,7 @@ dotenv.config();
 const router = express.Router();
 
 // Route for User Sign up
-router.post('/signup', async(request, response) => {
+router.post('/signup', async (request, response) => {
     try {
         const { username, email, password } = request.body;
 
@@ -40,19 +41,81 @@ router.post('/signup', async(request, response) => {
             password: hashedPassword,
         });
 
-         // Remove password before returning the response
-         const userResponse = {
-            _id: newUser._id,
-            username: newUser.username,
-            email: newUser.email,
-        };
+        // Remove password before returning the response
+        //  const userResponse = {
+        //     _id: newUser._id,
+        //     username: newUser.username,
+        //     email: newUser.email,
+        // };
 
-        return response.status(201).json(userResponse);
+        // return response.status(201).json(userResponse);
+
+        if (newUser) {
+            const verificationToken = jwt.sign(
+                { id: newUser._id },
+                process.env.SECRET_KEY,
+                { expiresIn: "1h" }
+            );
+
+            await sendVerificationEmail(newUser.email, verificationToken);
+
+            response.status(201).json({
+                message:
+                    "User registered. Please verify your email to activate your account.",
+            });
+        } else {
+            return response.status(400).json({
+                message: "Invalid user data",
+            });
+        }
     } catch (error) {
         console.log('Signup error:', error.message);
         response.status(500).json({ message: 'Internal server error' });
     }
 });
+
+// Route for confirmation email
+router.get('/verify-email', async (request, response) => {
+    try {
+      const { token } = request.query;
+  
+      if (!token) {
+        return response.status(400).json({
+          message: "Invalid or missing token.",
+        });
+      }
+  
+      const decoded = jwt.verify(token, process.env.EMAIL_PASS);
+  
+      const user = await User.findById(decoded.id);
+      if (!user) {
+        return response.status(400).json({
+          message: "User not found.",
+        });
+      }
+  
+      if (user.isVerified) {
+        return response.status(400).json({
+          message: "Email is already verified.",
+        });
+      }
+  
+      user.isVerified = true;
+      await user.save();
+  
+      response.status(200).json({
+        message: "Email successfully verified. You can now log in.",
+      });
+    } catch (error) {
+      console.error(error);
+      response.status(500).json({ message: "Internal server error" });
+    }
+  });
+//   const generateToken = (id) => {
+//     return jwt.sign({ id }, process.env.SECRET_KEY, {
+//       expiresIn: "500s",
+//     });
+//   };
 
 // Route for User Login
 router.post('/login', async (request, response) => {
@@ -60,7 +123,7 @@ router.post('/login', async (request, response) => {
 
 
 
-      
+
         const { identifier, password } = request.body;
 
         // Check if all required fields are provided
@@ -71,9 +134,9 @@ router.post('/login', async (request, response) => {
         // Find the user by username
         const user = await User.findOne({
             $or: [{ username: identifier }, { email: identifier.toLowerCase() }],
-         });
+        });
         if (!user) {
-            return response.status(404).json({ message: 'User not found'});
+            return response.status(404).json({ message: 'User not found' });
         }
 
         // Check if the password is correct
@@ -93,7 +156,7 @@ router.post('/login', async (request, response) => {
             token,
             username: user.username,
             email: user.email,
-         });
+        });
     } catch (error) {
         console.log('Login error:', error.message);
         response.status(500).json({ message: 'Internal server error' });
