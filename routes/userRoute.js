@@ -100,7 +100,7 @@ router.get('/verify-email', async (request, response) => {
             });
         }
 
-        user.isVerified = true;
+        user.is_verified = true;
         await user.save();
 
         response.status(200).json({
