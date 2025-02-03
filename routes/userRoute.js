@@ -94,7 +94,7 @@ router.get('/verify-email', async (request, response) => {
             });
         }
 
-        if (user.isVerified) {
+        if (user.is_verified) {
             return response.status(400).json({
                 message: "Email is already verified.",
             });
