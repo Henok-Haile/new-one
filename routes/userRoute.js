@@ -75,6 +75,50 @@ router.post('/signup', async (request, response) => {
 });
 
 // Route for confirmation email
+// router.get('/verify-email', async (request, response) => {
+//     try {
+//         const { token } = request.query;
+
+//         if (!token) {
+//             return response.status(400).json({
+//                 message: "Invalid or missing token.",
+//             });
+//         }
+
+//         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+//         const user = await User.findById(decoded.id);
+//         if (!user) {
+//             return response.status(400).json({
+//                 message: "User not found.",
+//             });
+//         }
+
+//         if (user.is_verified) {
+//             return response.status(400).json({
+//                 message: "Email is already verified.",
+//             });
+//         }
+
+//         user.is_verified = true;
+//         await user.save();
+
+//         response.status(200).json({
+//             message: "Email successfully verified. You can now log in.",
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         response.status(500).json({ message: "Internal server error" });
+//     }
+// });
+// //   const generateToken = (id) => {
+// //     return jwt.sign({ id }, process.env.SECRET_KEY, {
+// //       expiresIn: "500s",
+// //     });
+// //   };
+
+// // Route for User Login
+
 router.get('/verify-email', async (request, response) => {
     try {
         const { token } = request.query;
@@ -94,13 +138,13 @@ router.get('/verify-email', async (request, response) => {
             });
         }
 
-        if (user.is_verified) {
+        if (user.is_verified) { // <-- Make sure you're checking "is_verified"
             return response.status(400).json({
                 message: "Email is already verified.",
             });
         }
 
-        user.is_verified = true;
+        user.is_verified = true; // <-- Update correctly
         await user.save();
 
         response.status(200).json({
@@ -111,16 +155,59 @@ router.get('/verify-email', async (request, response) => {
         response.status(500).json({ message: "Internal server error" });
     }
 });
-//   const generateToken = (id) => {
-//     return jwt.sign({ id }, process.env.SECRET_KEY, {
-//       expiresIn: "500s",
-//     });
-//   };
 
-// Route for User Login
+
+
+// router.post('/login', async (request, response) => {
+//     try {
+
+//         const { identifier, password } = request.body;
+
+//         // Check if all required fields are provided
+//         if (!identifier || !password) {
+//             return response.status(400).json({ message: 'All fields are required' });
+//         }
+
+//         // Find the user by username or email
+//         const user = await User.findOne({
+//             $or: [{ username: identifier }, { email: identifier.toLowerCase() }],
+//         });
+//         if (!user) {
+//             return response.status(404).json({ message: 'User not found' });
+//         }
+
+//          // Check if the user is verified
+//          if (!user.is_verified) {
+//             return response.status(403).json({ message: 'Please verify your email before logging in.' });
+//         }
+
+
+//         // Check if the password is correct
+//         const passwordMatch = await bcrypt.compare(password, user.password);
+//         if (!passwordMatch) {
+//             return response.status(401).json({ message: 'Invalid password' });
+//         }
+
+//         // Genereate JWT token with userId included
+//         const token = jwt.sign(
+//             { userId: user._id, isLogged: true },
+//             process.env.JWT_SECRET,
+//             { expiresIn: '1h' }
+//         );
+
+//         return response.status(200).json({
+//             token,
+//             username: user.username,
+//             email: user.email,
+//         });
+//     } catch (error) {
+//         console.log('Login error:', error.message);
+//         response.status(500).json({ message: 'Internal server error' });
+//     }
+// });
+
 router.post('/login', async (request, response) => {
     try {
-
         const { identifier, password } = request.body;
 
         // Check if all required fields are provided
@@ -132,15 +219,15 @@ router.post('/login', async (request, response) => {
         const user = await User.findOne({
             $or: [{ username: identifier }, { email: identifier.toLowerCase() }],
         });
+
         if (!user) {
             return response.status(404).json({ message: 'User not found' });
         }
 
-         // Check if the user is verified
-         if (!user.is_verified) {
+        // Check if the user is verified
+        if (!user.is_verified) { // <-- Ensure this field is correct
             return response.status(403).json({ message: 'Please verify your email before logging in.' });
         }
-
 
         // Check if the password is correct
         const passwordMatch = await bcrypt.compare(password, user.password);
@@ -148,7 +235,7 @@ router.post('/login', async (request, response) => {
             return response.status(401).json({ message: 'Invalid password' });
         }
 
-        // Genereate JWT token with userId included
+        // Generate JWT token with userId included
         const token = jwt.sign(
             { userId: user._id, isLogged: true },
             process.env.JWT_SECRET,
@@ -165,6 +252,7 @@ router.post('/login', async (request, response) => {
         response.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 
 export default router;
