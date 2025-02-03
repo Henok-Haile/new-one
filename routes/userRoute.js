@@ -121,9 +121,6 @@ router.get('/verify-email', async (request, response) => {
 router.post('/login', async (request, response) => {
     try {
 
-
-
-
         const { identifier, password } = request.body;
 
         // Check if all required fields are provided
@@ -131,13 +128,19 @@ router.post('/login', async (request, response) => {
             return response.status(400).json({ message: 'All fields are required' });
         }
 
-        // Find the user by username
+        // Find the user by username or email
         const user = await User.findOne({
             $or: [{ username: identifier }, { email: identifier.toLowerCase() }],
         });
         if (!user) {
             return response.status(404).json({ message: 'User not found' });
         }
+
+         // Check if the user is verified
+         if (!user.is_verified) {
+            return response.status(403).json({ message: 'Please verify your email before logging in.' });
+        }
+
 
         // Check if the password is correct
         const passwordMatch = await bcrypt.compare(password, user.password);
