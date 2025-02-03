@@ -60,7 +60,7 @@ app.use('/user', userRoute);
 
 // Connect to MongoDB
 mongoose
-    .connect(mongoDBURL, { useNewUrlParser: true, useUnifiedTopology: true })
+    .connect(mongoDBURL)
     .then(() => {
         console.log('App connected to database');
         app.listen(PORT, () => {
