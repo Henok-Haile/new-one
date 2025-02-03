@@ -17,6 +17,9 @@ const sendVerificationEmail = async (email, token) => {
     return;
 }
 
+  // const verificationUrl = `${process.env.BACKEND_URL}/user/verify-email?token=${token}`; // directly call the backend
+
+
   const verificationUrl = `${process.env.CLIENT_URL}/user/verify-email?token=${token}`;
   console.log("Verification URL:", verificationUrl);
 
