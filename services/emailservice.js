@@ -12,7 +12,14 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendVerificationEmail = async (email, token) => {
-  const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
+  if (!token) {
+    console.error("Error: Verification token is undefined!");
+    return;
+}
+
+  const verificationUrl = `${process.env.CLIENT_URL}/user/verify-email?token=${token}`;
+  console.log("Verification URL:", verificationUrl);
+
   const mailOptions = {
     from: `"Full Stack Project" <${process.env.EMAIL_USER}>`,
     to: email,

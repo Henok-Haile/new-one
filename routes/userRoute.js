@@ -57,6 +57,10 @@ router.post('/signup', async (request, response) => {
                 { expiresIn: "1h" }
             );
 
+            console.log("New User ID:", newUser._id); // Debugging
+            console.log("Generated Token:", verificationToken); // Debugging
+
+
             await sendVerificationEmail(newUser.email, verificationToken);
 
             response.status(201).json({
@@ -128,6 +132,8 @@ router.get('/verify-email', async (request, response) => {
                 message: "Invalid or missing token.",
             });
         }
+
+        console.log("Received Token:", token); // Debugging
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
