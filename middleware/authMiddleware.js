@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/userModel.js";
 
-export const protect = async (req, resizeBy, next) => {
+export const protect = async (req, res, next) => {
     let token;
 
     // Check if the token is present in the Authorization header

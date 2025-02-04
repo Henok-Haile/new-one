@@ -1,13 +1,13 @@
 import nodemailer from 'nodemailer';
-import dotenv  from 'dotenv'
+import dotenv from 'dotenv'
 // const nodemailer = require("nodemailer");
 dotenv.config()
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user:process.env.EMAIL_USER,
-    pass:process.env.EMAIL_PASS,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -15,7 +15,7 @@ const sendVerificationEmail = async (email, token) => {
   if (!token) {
     console.error("Error: Verification token is undefined!");
     return;
-}
+  }
 
   // const verificationUrl = `${process.env.BACKEND_URL}/user/verify-email?token=${token}`; // directly call the backend
 
